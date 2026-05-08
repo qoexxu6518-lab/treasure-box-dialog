@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>宝物/器魂仓库以及弹窗 — 补充交互演示</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --gold:#c8a84e;--gold-light:#e8d48e;--gold-dark:#9c7830;
+  --ink:#2b2116;--paper:#f8f1df;--paper2:#efe4cc;--panel:#16161e;
+  --cyan:#22c6cf;--orange:#f36c1d;--green:#51c878;--red:#ef5350;
+  --q1:#b9b9b9;--q2:#56c271;--q3:#4aa8ff;--q4:#a769ff;--q5:#ffb72e;
+}
+body{background:#fff;font-family:'Microsoft YaHei','PingFang SC',Arial,sans-serif;color:#333;overflow-x:hidden;}
+button{font-family:inherit;}
+.demo-wrapper{display:flex;justify-content:center;align-items:flex-start;gap:24px;padding:20px 24px;}
+.game-container{width:390px;height:844px;border-radius:18px;overflow:hidden;box-shadow:0 0 40px rgba(0,0,0,.45);position:sticky;top:20px;flex-shrink:0;background:#162a2f;color:#f4ead0;user-select:none;}
+.game-bg{position:absolute;inset:0;background:radial-gradient(circle at 50% -6%,rgba(255,220,130,.28),transparent 30%),linear-gradient(180deg,#274950 0%,#172d32 58%,#102226 100%);}
+.game-bg:before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.08) 1px,transparent 1px),linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px);background-size:34px 34px;opacity:.18;}
+.game-screen{position:absolute;inset:0;display:flex;flex-direction:column;z-index:1;}
+.phone-title{height:48px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(45,36,25,.96),rgba(26,22,18,.96));border-bottom:1px solid rgba(200,168,78,.35);font-weight:bold;color:var(--gold-light);letter-spacing:1px;text-shadow:0 2px 4px #000;}
+.context-tabs{display:flex;gap:8px;padding:10px 12px;background:rgba(0,0,0,.22);}
+.context-tab{flex:1;height:32px;border:1px solid rgba(200,168,78,.25);border-radius:16px;background:rgba(255,255,255,.06);color:#d8cba8;font-size:12px;cursor:pointer;}
+.context-tab.active{background:linear-gradient(180deg,rgba(200,168,78,.35),rgba(200,168,78,.14));border-color:var(--gold);color:#fff2bb;font-weight:bold;}
+.demo-scene{flex:1;overflow-y:auto;padding:12px;display:none;scrollbar-width:none;-ms-overflow-style:none;}
+.demo-scene::-webkit-scrollbar{display:none;}
+.demo-scene.active{display:block;}
+.hero-card{background:rgba(16,22,24,.72);border:1px solid rgba(200,168,78,.2);border-radius:14px;padding:12px;margin-bottom:12px;box-shadow:inset 0 0 24px rgba(0,0,0,.15);}
+.hero-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.hero-avatar{width:52px;height:52px;border-radius:50%;border:2px solid rgba(200,168,78,.65);background:#111;object-fit:cover;}
+.hero-name{font-size:16px;font-weight:bold;color:#fff2c7;}
+.hero-sub{font-size:11px;color:#a9b5ae;margin-top:3px;}
+.treasure-slots{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+.slot-card{height:74px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(200,168,78,.18);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;position:relative;transition:all .18s;}
+.slot-card:hover{transform:translateY(-2px);border-color:rgba(200,168,78,.65);box-shadow:0 5px 14px rgba(0,0,0,.24);}
+.slot-label{font-size:10px;color:#b9ae92;line-height:1;}
+.empty-plus{width:38px;height:38px;border-radius:8px;border:1px dashed rgba(200,168,78,.45);display:flex;align-items:center;justify-content:center;color:var(--gold-light);font-size:22px;background:rgba(0,0,0,.12);}
+.scene-title{font-size:13px;color:#fff2c7;font-weight:bold;margin:14px 0 8px;display:flex;align-items:center;gap:6px;}
+.scene-title:before{content:'';width:4px;height:14px;background:var(--gold);border-radius:2px;}
+.help-box{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 12px;color:#c9d4ce;font-size:11px;line-height:1.65;margin-bottom:12px;}
+.warehouse-list{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+.warehouse-item{display:flex;align-items:center;gap:8px;padding:8px;border-radius:12px;background:rgba(10,15,17,.68);border:1px solid rgba(200,168,78,.15);cursor:pointer;transition:all .18s;min-height:72px;}
+.warehouse-item:hover{border-color:rgba(200,168,78,.6);background:rgba(34,42,38,.8);}
+.wi-name{font-size:12px;color:#fff2c7;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:96px;}
+.wi-meta{font-size:10px;color:#9eacaa;margin-top:2px;}
+.badge-equipped{display:inline-block;margin-top:4px;padding:1px 6px;border-radius:8px;background:rgba(81,200,120,.16);border:1px solid rgba(81,200,120,.45);color:#7bec9d;font-size:10px;}
+.warehouse-tabs{display:flex;gap:8px;margin:4px 0 12px;padding:4px;background:rgba(0,0,0,.18);border:1px solid rgba(200,168,78,.14);border-radius:14px;}
+.warehouse-tab{flex:1;height:30px;border:1px solid rgba(200,168,78,.18);border-radius:11px;background:rgba(255,255,255,.05);color:#bfb29b;font-size:12px;cursor:pointer;}
+.warehouse-tab.active{background:linear-gradient(180deg,rgba(200,168,78,.35),rgba(200,168,78,.14));border-color:var(--gold);color:#fff2c7;font-weight:bold;}
+.warehouse-page{display:none;}
+.warehouse-page.active{display:block;}
+.warehouse-scene{padding:0;background:#c7c0a4;color:#3f3526;}
+.warehouse-scene.active{position:absolute;inset:0;z-index:4;display:block;}
+.warehouse-screen{height:100%;min-height:100%;background:linear-gradient(180deg,#bdb79a 0%,#c9c2a7 45%,#d6d0b9 100%);position:relative;overflow:hidden;}
+.warehouse-head{height:46px;display:flex;align-items:center;gap:10px;padding:0 12px;background:linear-gradient(180deg,#38342b,#25231e);color:#f3ead0;font-size:19px;font-weight:bold;text-shadow:0 2px 3px rgba(0,0,0,.55);}
+.warehouse-back{width:34px;height:34px;border:none;border-radius:50%;background:linear-gradient(180deg,#d4b15b,#9b7732);color:#fff;font-size:24px;line-height:30px;cursor:pointer;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18);}
+.resource-row{height:32px;display:flex;align-items:center;gap:11px;padding:0 10px;background:rgba(58,52,42,.72);color:#f8ead0;font-size:12px;white-space:nowrap;}
+.res-icon{font-size:16px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6));}
+.project-tabs{height:44px;display:flex;align-items:center;gap:6px;padding:5px 8px;background:rgba(238,230,202,.9);border-bottom:1px solid rgba(91,74,43,.22);overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;}
+.project-tabs::-webkit-scrollbar{display:none;}
+.project-tab,.warehouse-tab.project-tab{height:32px;min-width:76px;padding:0 10px;border:2px solid rgba(172,139,82,.45);border-radius:5px;background:#f8efd6;color:#6c5a3a;font-size:13px;font-weight:bold;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(255,255,255,.65);}
+.project-tab.muted{opacity:.7;cursor:default;}
+.project-tab.active,.warehouse-tab.project-tab.active{background:linear-gradient(180deg,#f2c94f,#d79b22);border-color:#f5df7c;color:#5b3d12;box-shadow:0 2px 5px rgba(0,0,0,.18),inset 0 0 0 1px rgba(255,255,255,.55);}
+.inventory-area{height:calc(100% - 122px);padding:10px 8px 14px;overflow-y:auto;}
+.inventory-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px 5px;align-content:start;}
+.inventory-cell{min-width:0;text-align:center;cursor:pointer;transition:transform .12s;}
+.inventory-cell:hover{transform:translateY(-2px);}
+.inventory-cell .treasure-icon,.inventory-cell .soul-icon{margin:0 auto;}
+.inventory-cell .icon-name-label{display:none;}
+.inventory-name{margin-top:4px;font-size:10px;line-height:1.15;color:#3e3428;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 0 rgba(255,255,255,.5);}
+.inventory-empty{padding:28px 0;text-align:center;color:#776a55;font-size:12px;grid-column:1/-1;}
+.soul-owner-badge{position:absolute;left:-2px;top:-2px;width:22px;height:22px;border-radius:50%;border:2px solid #fff;background:#1e1710;z-index:7;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.4);overflow:hidden;}
+.soul-owner-badge img{width:18px;height:18px;object-fit:contain;}
+.gain-card{background:rgba(16,22,24,.72);border:1px solid rgba(200,168,78,.2);border-radius:16px;padding:14px;margin-top:8px;text-align:center;box-shadow:inset 0 0 24px rgba(0,0,0,.15);}
+.gain-title{font-size:15px;font-weight:bold;color:#fff2c7;margin-bottom:10px;}
+.gain-rewards{display:flex;justify-content:center;gap:18px;margin:12px 0;}
+.gain-reward{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;color:#d8cba8;font-size:11px;}
+.gain-reward:hover{filter:brightness(1.15);}
+.treasure-icon{position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.treasure-icon .item-bg,.treasure-icon .item-frame{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;}
+.treasure-icon .item-frame{z-index:3;}
+.treasure-icon .item-content{position:relative;z-index:2;width:74%;height:74%;object-fit:contain;}
+.icon-hero-badge{position:absolute;left:-2px;top:-2px;width:22px;height:22px;border-radius:50%;border:2px solid #fff;background:#222;object-fit:cover;z-index:6;box-shadow:0 1px 4px rgba(0,0,0,.4);}
+.icon-name-label{position:absolute;left:3px;right:3px;bottom:2px;z-index:6;font-size:9px;line-height:1.15;color:#fff;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:1px 2px;border-radius:3px;background:rgba(0,0,0,.52);text-shadow:0 1px 2px rgba(0,0,0,.8);pointer-events:none;}
+.item-glow-q5{filter:drop-shadow(0 0 8px rgba(255,174,36,.85));}
+.item-glow-q4{filter:drop-shadow(0 0 7px rgba(167,105,255,.75));}
+.drag-scroll{cursor:grab;scrollbar-width:none;-ms-overflow-style:none;}
+.drag-scroll::-webkit-scrollbar{display:none;}
+.drag-scroll.dragging{cursor:grabbing;}
+/* Document panel */
+.doc-panel{width:794px;height:844px;display:flex;flex-direction:column;border-radius:12px;overflow:hidden;box-shadow:0 0 40px rgba(0,0,0,.22);flex-shrink:0;}
+.doc-nav{background:#16161e;border:1px solid rgba(200,168,78,.2);padding:12px 18px;display:flex;flex-direction:column;gap:10px;}
+.doc-nav-top{display:flex;align-items:center;gap:12px;}
+.doc-nav-title{font-size:17px;font-weight:bold;color:#e8d48e;flex:1;}
+.ref-btn{display:inline-block;padding:5px 13px;border:1px solid rgba(200,168,78,.4);border-radius:8px;color:#e8d48e;text-decoration:none;font-size:12px;background:rgba(200,168,78,.1);}
+.doc-nav-row{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+.doc-nav-label{font-size:10px;color:rgba(200,168,78,.55);font-weight:600;margin-right:2px;}
+.nav-btn{padding:4px 10px;border:1px solid rgba(200,168,78,.16);border-radius:5px;background:rgba(200,168,78,.05);color:#9e998e;font-size:10px;cursor:pointer;transition:all .15s;}
+.nav-btn:hover,.nav-btn.active{background:rgba(200,168,78,.2);border-color:#c8a84e;color:#e8d48e;font-weight:bold;}
+.doc-body{flex:1;overflow-y:auto;background:#f9f6f0;color:#2d261b;padding:42px 54px 58px;border:1px solid rgba(200,168,78,.15);border-top:none;}
+.doc-h1{text-align:center;font-size:22px;font-weight:bold;color:#1f160a;letter-spacing:1px;margin-bottom:4px;}
+.doc-subtitle{text-align:center;color:#888;font-size:12px;margin-bottom:8px;}
+.doc-divider-title{height:1px;background:linear-gradient(90deg,transparent,#c8a84e,transparent);margin:6px 0 28px;}
+.doc-h2{font-size:15px;font-weight:bold;color:#2c1e08;margin:28px 0 12px;padding:7px 14px;background:#f0ead8;border-left:4px solid #c8a84e;border-radius:0 4px 4px 0;display:flex;align-items:center;justify-content:space-between;}
+.doc-h3{font-size:13px;font-weight:bold;color:#3a2c10;margin:18px 0 8px;padding:4px 8px;border-left:2px solid rgba(200,168,78,.55);display:flex;align-items:center;justify-content:space-between;}
+.doc-p{font-size:13px;line-height:1.85;color:#333;margin:8px 0;}
+.doc-ul{list-style:none;margin:8px 0;padding:0;}
+.doc-ul li{position:relative;padding:2px 0 2px 18px;font-size:13px;line-height:1.85;color:#333;}
+.doc-ul li:before{content:'▸';position:absolute;left:2px;color:#c8a84e;font-size:10px;top:4px;}
+.doc-hl{color:#8a5c10;font-weight:bold;}
+.doc-note{font-size:12px;color:#666;margin:10px 0;padding:8px 12px;background:#fff;border-left:3px solid #c8a84e;border-radius:0 4px 4px 0;line-height:1.65;}
+.doc-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:12px;}
+.doc-table th{background:#f0ead8;color:#2c1e08;padding:7px 10px;border:1px solid #d5ccb0;text-align:left;}
+.doc-table td{padding:6px 10px;border:1px solid #e0d8c0;color:#333;vertical-align:top;}
+.doc-jump-btn{padding:2px 8px;border:1px solid rgba(200,168,78,.5);border-radius:4px;background:rgba(200,168,78,.1);color:#8a5c10;font-size:10px;cursor:pointer;white-space:nowrap;}
+.doc-anchor{display:block;margin-top:-18px;padding-top:18px;visibility:hidden;height:0;}
+/* Popup shared */
+.modal-layer{position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(5,12,14,.62);backdrop-filter:blur(4px);padding:12px;}
+.modal-layer.show{display:flex;}
+.popup-panel{width:342px;max-height:780px;background:#f5efe2;border:1px solid rgba(86,64,34,.35);border-radius:18px;box-shadow:0 14px 35px rgba(0,0,0,.45);overflow:hidden;color:#59493b;display:flex;flex-direction:column;}
+.popup-title{height:50px;background:linear-gradient(180deg,#e5d0a8,#d5bb8d);display:flex;align-items:center;justify-content:center;position:relative;color:#fff;font-size:22px;font-weight:bold;text-shadow:0 2px 0 rgba(70,55,40,.75),0 0 4px rgba(0,0,0,.3);letter-spacing:1px;flex-shrink:0;}
+.popup-close{position:absolute;right:10px;top:9px;width:32px;height:32px;border:none;background:transparent;color:#fff8e8;font-size:30px;line-height:30px;cursor:pointer;text-shadow:0 2px 0 rgba(80,65,50,.7);}
+.popup-body{padding:12px;overflow-y:auto;min-height:0;scrollbar-width:none;-ms-overflow-style:none;}
+.popup-body::-webkit-scrollbar{display:none;}
+.detail-panel{background:transparent;border:none;box-shadow:none;overflow:visible;max-height:none;}
+.detail-card{height:650px;max-height:calc(844px - 48px);background:#f5efe2;border:1px solid rgba(86,64,34,.35);border-radius:18px;box-shadow:0 14px 35px rgba(0,0,0,.45);overflow:hidden;color:#59493b;display:flex;flex-direction:column;}
+.detail-panel.has-strip .detail-card{height:585px;}
+.treasure-detail-card.adaptive-card{height:auto;min-height:0;max-height:650px;}
+.treasure-detail-card.adaptive-card .detail-content{flex:0 1 auto;}
+.treasure-detail-card.adaptive-card .detail-scroll{flex:0 1 auto;max-height:430px;}
+.treasure-detail-card.compact-card{max-height:480px;}
+.treasure-detail-card.compact-card .detail-scroll{max-height:260px;}
+.soul-detail-card{height:auto;min-height:0;max-height:520px;}
+.soul-detail-card .detail-content{flex:0 1 auto;}
+.soul-detail-card .detail-scroll{flex:0 1 auto;max-height:240px;}
+.detail-content{flex:1;min-height:0;display:flex;flex-direction:column;padding:12px;}
+.detail-scroll{flex:1;min-height:0;overflow-y:auto;padding-right:2px;}
+.detail-top{display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(93,70,44,.18);padding-bottom:10px;margin-bottom:10px;}
+.detail-info{flex:1;min-width:0;}
+.detail-name{font-size:16px;font-weight:bold;color:#5a4030;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.detail-meta{font-size:12px;color:#8f7b65;margin-top:4px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.type-pill,.quality-pill{display:inline-flex;align-items:center;border-radius:10px;padding:1px 7px;font-size:10px;border:1px solid rgba(121,93,56,.25);background:rgba(255,255,255,.48);}
+.detail-ops{display:flex;flex-direction:column;gap:7px;width:76px;flex-shrink:0;}
+ks-btn,.ks-btn{} 
+.ks-btn{height:33px;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:bold;cursor:pointer;text-shadow:0 2px 0 rgba(0,0,0,.25);box-shadow:inset 0 -3px 0 rgba(0,0,0,.22),0 2px 4px rgba(0,0,0,.18);}
+.ks-btn.orange{background:linear-gradient(180deg,#ff8b24,#ef4c0c);}
+.ks-btn.cyan{background:linear-gradient(180deg,#46e2df,#16a9b9);}
+.ks-btn.green{background:linear-gradient(180deg,#58db69,#1eaa32);}
+.ks-btn.gray{background:linear-gradient(180deg,#b6aea2,#7c746b);}
+.info-section{margin:10px 0;}
+.section-title{font-size:14px;font-weight:bold;color:#6b5741;margin-bottom:6px;display:flex;align-items:center;gap:5px;}
+.section-title:before{content:'◆';font-size:10px;color:#b4955c;}
+.attr-box{background:#e7decc;border-radius:14px;padding:8px 10px;}
+.attr-row{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#806f63;padding:4px 0;}
+.attr-row .attr-name{flex:1;}
+.attr-row .attr-value{font-weight:bold;color:#5d463d;}
+.attr-ico{width:18px;text-align:center;opacity:.72;}
+.soul-box{padding:9px;}
+.soul-card{display:flex;gap:10px;align-items:flex-start;}
+.soul-icon{width:50px;height:50px;position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.soul-icon .item-bg,.soul-icon .item-frame{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;}
+.soul-icon .item-frame{z-index:3;}
+.soul-icon .soul-star{position:relative;z-index:4;font-size:25px;color:#f3d77a;text-shadow:0 0 8px rgba(255,210,80,.8);}
+.soul-info{flex:1;min-width:0;}
+.soul-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;}
+.soul-name{font-size:13px;font-weight:bold;color:#5b4535;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.soul-state{font-size:11px;color:#6b5741;font-weight:bold;white-space:nowrap;}
+.soul-card .attr-row{padding:3px 0;}
+.soul-link-arrow{font-size:20px;font-weight:bold;color:#b4955c;letter-spacing:-4px;text-shadow:0 1px 0 rgba(255,255,255,.5);}
+.soul-owner-compact{width:98px;flex-shrink:0;display:flex;align-items:center;justify-content:flex-end;gap:6px;}
+.soul-owner-compact .soul-link-arrow{font-size:18px;letter-spacing:-5px;}
+.action-tip{font-size:12px;color:#806f63;text-align:center;line-height:1.5;padding:5px 8px 8px;}
+.bottom-action{padding-top:8px;display:flex;gap:8px;flex-shrink:0;}
+.bottom-action .ks-btn{height:42px;flex:1;font-size:18px;}
+.hero-strip{margin-top:9px;padding:0 4px;flex-shrink:0;background:transparent;border:none;}
+.hero-strip-list{display:flex;gap:10px;justify-content:flex-start;overflow-x:auto;padding:4px 8px 8px;}
+.strip-item{width:54px;height:54px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;opacity:.84;flex:0 0 auto;}
+.strip-item.active{opacity:1;filter:drop-shadow(0 0 8px rgba(255,186,40,.95));}
+.strip-empty{width:54px;height:54px;border-radius:10px;border:1px dashed rgba(255,244,220,.55);display:flex;align-items:center;justify-content:center;color:#ffe7b2;font-size:22px;background:rgba(255,255,255,.08);flex:0 0 auto;cursor:pointer;}
+/* Select popup */
+#select-panel{height:650px;}
+.current-wear{display:flex;flex-direction:column;align-items:center;margin:4px 0 12px;}
+.current-wear-label{font-size:13px;color:#6c5b49;font-weight:bold;margin-top:6px;}
+.select-grid-wrap{background:#ded3bf;border-radius:16px;padding:10px;height:430px;overflow-y:auto;}
+.select-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.select-item{height:70px;border-radius:10px;background:rgba(255,255,255,.28);border:1px solid rgba(115,96,70,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:all .15s;}
+.select-item:hover{transform:translateY(-2px);box-shadow:0 6px 12px rgba(0,0,0,.16);}
+.select-item.disabled{opacity:.5;filter:grayscale(.5);}
+.select-hero-badge{position:absolute;left:4px;top:4px;width:22px;height:22px;border-radius:50%;border:2px solid #fff;z-index:8;object-fit:cover;box-shadow:0 1px 4px rgba(0,0,0,.35);}
+.select-name-pop{position:absolute;left:3px;right:3px;bottom:2px;z-index:7;font-size:8px;color:#fff;background:rgba(0,0,0,.48);border-radius:3px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:1px 2px;}
+/* Confirm */
+#confirm-panel{height:620px;}
+.confirm-body{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
+.compare-head{display:flex;align-items:center;justify-content:space-around;margin:4px 0 14px;}
+.compare-side{width:106px;text-align:center;}
+.compare-name{font-size:13px;color:#5f4a3a;font-weight:bold;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.compare-arrow{font-size:42px;color:#5cd29e;text-shadow:0 2px 0 rgba(0,0,0,.12);font-weight:bold;}
+.empty-big{width:70px;height:70px;margin:0 auto;border-radius:14px;border:2px dashed rgba(108,83,50,.3);background:rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;color:#b3a188;font-size:12px;}
+.change-box{background:#e7decc;border-radius:16px;padding:8px 10px;margin-bottom:8px;flex:1;min-height:0;overflow-y:auto;}
+.change-section-title{font-size:13px;color:#5b4735;font-weight:bold;margin:6px 0 4px;display:flex;align-items:center;gap:4px;}
+.change-section-title:before{content:'◆';color:#b4955c;font-size:10px;}
+.soul-change-line{height:58px;display:flex;align-items:center;justify-content:center;gap:12px;margin:2px 0 6px;border-radius:12px;background:rgba(255,255,255,.24);}
+.soul-mini-empty{width:46px;height:46px;border-radius:9px;border:1px dashed rgba(108,83,50,.3);background:rgba(255,255,255,.38);display:flex;align-items:center;justify-content:center;color:#9a8873;font-size:11px;}
+.soul-change-arrow{font-size:20px;font-weight:bold;color:#cf4d42;text-shadow:0 1px 0 rgba(255,255,255,.45);}
+.change-row{display:grid;grid-template-columns:1fr 58px 18px 58px;gap:5px;align-items:center;font-size:12px;color:#806f63;padding:4px 0;}
+.change-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.old-val,.new-val{font-weight:bold;text-align:right;color:#604b3f;}
+.new-val.up{color:#1fa55b;}.new-val.down{color:#ef5350;}.new-val.same{color:#604b3f;}
+.arrow-mini{text-align:center;color:#cf4d42;font-weight:bold;}
+.empty-change{font-size:12px;color:#9a8873;padding:4px 0 6px;}
+.confirm-actions{display:flex;gap:12px;padding:4px 8px 2px;flex-shrink:0;}
+.confirm-actions .ks-btn{height:42px;flex:1;font-size:18px;}
+.toast{position:absolute;left:50%;bottom:76px;transform:translateX(-50%);padding:9px 16px;background:rgba(0,0,0,.78);border:1px solid rgba(200,168,78,.35);border-radius:18px;color:#fff;font-size:12px;z-index:50;opacity:0;pointer-events:none;transition:opacity .2s,bottom .2s;white-space:nowrap;}
+.toast.show{opacity:1;bottom:90px;}
+.lightbox{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;cursor:pointer;}
+.lightbox.show{display:flex;}
+.lightbox img{max-width:95vw;max-height:95vh;object-fit:contain;cursor:default;user-select:none;}
+.lightbox-close{position:absolute;top:16px;right:16px;width:36px;height:36px;border:none;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;font-size:20px;cursor:pointer;z-index:10;}
+</style>
+</head>
+<body>
+<div class="demo-wrapper">
+  <div class="game-container" id="game-container">
+    <div class="game-bg"></div>
+    <div class="game-screen">
+      <div class="phone-title">宝物相关弹窗补充演示</div>
+      <div class="context-tabs">
+        <button class="context-tab active" data-scene="hero" onclick="switchScene('hero')">英雄-宝物入口</button>
+        <button class="context-tab" data-scene="bag" onclick="switchScene('bag')">仓库入口</button>
+        <button class="context-tab" data-scene="gain" onclick="switchScene('gain')">获得入口</button>
+      </div>
+      <div class="demo-scene active" id="scene-hero">
+        <div class="help-box">点击英雄身上的任意宝物打开「宝物详情」。从英雄入口打开时，详情弹窗底部会出现英雄已穿戴宝物横向选择，并显示「更换」按钮。</div>
+        <div class="hero-card">
+          <div class="hero-head">
+            <img class="hero-avatar" src="../res/hero_10024201_0.png" alt="hero">
+            <div><div class="hero-name">赵云</div><div class="hero-sub">当前穿戴 4 / 5 件宝物；令符槽为空，可演示 A 为空的替换确认。</div></div>
+          </div>
+          <div class="treasure-slots" id="hero-slots"></div>
+        </div>
+        <div class="scene-title">演示入口</div>
+        <div class="warehouse-list">
+          <button class="warehouse-item" onclick="openSelectPopup('lingfu')" style="text-align:left;color:inherit;">
+            <span class="empty-plus">＋</span><span><span class="wi-name">空位穿戴</span><br><span class="wi-meta">打开选择弹窗，确认界面 A 为空</span></span>
+          </button>
+          <button class="warehouse-item" onclick="jumpToDemo('confirm')" style="text-align:left;color:inherit;">
+            <span class="empty-plus">↔</span><span><span class="wi-name">替换确认</span><br><span class="wi-meta">直接查看属性变化弹窗</span></span>
+          </button>
+        </div>
+      </div>
+      <div class="demo-scene warehouse-scene" id="scene-bag">
+        <div class="warehouse-screen">
+          <div class="warehouse-head"><button class="warehouse-back" onclick="switchScene('hero')">‹</button><span>仓库</span></div>
+          <div class="resource-row">
+            <span><span class="res-icon">🌾</span>1千万</span><span><span class="res-icon">⚙</span>1千万</span><span><span class="res-icon">📜</span>1千万</span><span><span class="res-icon">🧱</span>1千万</span><span><span class="res-icon">🔥</span>13650</span>
+          </div>
+          <div class="project-tabs drag-scroll">
+            <button class="project-tab muted" type="button">道具</button>
+            <button class="project-tab muted" type="button">技能碎片</button>
+            <button class="warehouse-tab project-tab active" data-warehouse="treasure" onclick="switchWarehouseTab('treasure')">宝物</button>
+            <button class="warehouse-tab project-tab" data-warehouse="soul" onclick="switchWarehouseTab('soul')">器魂</button>
+          </div>
+          <div class="inventory-area drag-scroll">
+            <div class="warehouse-page active" id="warehouse-page-treasure">
+              <div class="inventory-grid" id="warehouse-list"></div>
+            </div>
+            <div class="warehouse-page" id="warehouse-page-soul">
+              <div class="inventory-grid" id="soul-warehouse-list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="demo-scene" id="scene-gain">
+        <div class="help-box">物品获得界面中的器魂同样可点击查看详情。未注入器魂会展示“需要注入宝物才能生效”的提示，并提供「器魂注入」按钮。</div>
+        <div class="gain-card">
+          <div class="gain-title">获得奖励</div>
+          <div class="gain-rewards" id="gain-rewards"></div>
+          <div class="wi-meta">点击器魂图标查看器魂详情弹窗</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-layer" id="detail-layer">
+      <div class="popup-panel detail-panel" id="detail-panel"></div>
+    </div>
+    <div class="modal-layer" id="select-layer">
+      <div class="popup-panel" id="select-panel"></div>
+    </div>
+    <div class="modal-layer" id="confirm-layer">
+      <div class="popup-panel" id="confirm-panel"></div>
+    </div>
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <div class="doc-panel">
+    <div class="doc-nav">
+      <div class="doc-nav-top">
+        <div class="doc-nav-title">宝物/器魂仓库以及弹窗</div>
+        <a class="ref-btn" href="references.html" target="_blank">📷 参考界面</a>
+      </div>
+      <div class="doc-nav-row">
+        <span class="doc-nav-label">界面导航：</span>
+        <button class="nav-btn active" data-target="overview" onclick="jumpToDemo('overview')">演示概览</button>
+        <button class="nav-btn" data-target="warehouse-treasure" onclick="jumpToDemo('warehouse-treasure')">宝物仓库</button>
+        <button class="nav-btn" data-target="warehouse-soul" onclick="jumpToDemo('warehouse-soul')">器魂仓库</button>
+        <button class="nav-btn" data-target="detail-hero" onclick="jumpToDemo('detail-hero')">宝物详情</button>
+        <button class="nav-btn" data-target="soul-detail" onclick="jumpToDemo('soul-detail')">器魂详情</button>
+        <button class="nav-btn" data-target="select" onclick="jumpToDemo('select')">宝物选择</button>
+        <button class="nav-btn" data-target="confirm" onclick="jumpToDemo('confirm')">替换确认</button>
+        <button class="nav-btn" data-target="gain-soul" onclick="jumpToDemo('gain-soul')">获得器魂</button>
+      </div>
+    </div>
+    <div class="doc-body" id="doc-body">
+      <div class="doc-h1">宝物/器魂仓库以及弹窗</div>
+      <div class="doc-h1" style="font-size:17px;margin-top:4px;">补充交互演示说明</div>
+      <div class="doc-subtitle">版本 1.0 | 2026年5月</div>
+      <div class="doc-divider-title"></div>
+
+      <a class="doc-anchor" id="doc-overview"></a>
+      <div class="doc-h2"><span>一、系统概述</span></div>
+      <p class="doc-p">本页面用于补充原《封地·珍宝阁 宝物系统》未展开的仓库分页和通用弹窗，覆盖宝物与器魂在仓库、英雄穿戴、物品获得等来源中的查看与替换流程。</p>
+      <ul class="doc-ul">
+        <li>在本项目仓库界面基础上扩展「宝物仓库」和「器魂仓库」两个全屏分页。</li>
+        <li>补充宝物详情、器魂详情、宝物选择、替换确认等通用弹窗。</li>
+        <li>参考 KING SHOT 对弹窗大小、字号层级、按钮位置和信息分组的处理方式。</li>
+        <li>所有跨系统跳转在本独立演示中均使用 Toast 表达，不打开外部页面。</li>
+      </ul>
+
+      <a class="doc-anchor" id="doc-warehouse"></a>
+      <div class="doc-h2"><span>二、宝物仓库与器魂仓库</span><button class="doc-jump-btn" onclick="jumpToDemo('warehouse-treasure')">↗ 宝物仓库</button></div>
+      <div class="doc-h3"><span>2.1 宝物仓库</span><button class="doc-jump-btn" onclick="jumpToDemo('warehouse-treasure')">↗ 查看</button></div>
+      <p class="doc-p">宝物仓库为全屏仓库界面分页，物品区按每行 5 个显示。每个宝物只展示<span class="doc-hl">图标、名称、穿戴武将角标</span>，不展示详细文字信息；点击任意宝物打开「宝物详情弹窗」。</p>
+      <div class="doc-h3"><span>2.2 器魂仓库</span><button class="doc-jump-btn" onclick="jumpToDemo('warehouse-soul')">↗ 查看</button></div>
+      <p class="doc-p">器魂仓库同样为全屏仓库界面分页，物品区按每行 5 个显示。每个器魂只展示<span class="doc-hl">图标、名称、所属宝物角标</span>；点击任意器魂打开「器魂详情弹窗」。</p>
+
+      <a class="doc-anchor" id="doc-detail"></a>
+      <div class="doc-h2"><span>三、宝物详情弹窗</span><button class="doc-jump-btn" onclick="jumpToDemo('detail-hero')">↗ 查看</button></div>
+      <div class="doc-h3">3.1 基础信息区</div>
+      <p class="doc-p">宝物详情可从<span class="doc-hl">英雄-宝物界面</span>、<span class="doc-hl">宝物仓库</span>、<span class="doc-hl">宝物获得界面</span>等来源打开。上方展示宝物图标、穿戴英雄头像、名称和类型，宝物品质仅通过图标底图表现，不额外叠加品质文字。</p>
+      <div class="doc-h3">3.2 操作位置区</div>
+      <ul class="doc-ul">
+        <li>若该宝物已穿戴，显示「卸下」按钮。</li>
+        <li>若从英雄身上的宝物入口打开，则额外显示「更换」按钮，点击进入宝物选择弹窗。</li>
+        <li>若从仓库入口打开，则不显示底部英雄宝物横向选择。</li>
+      </ul>
+      <div class="doc-h3">3.3 详细信息区</div>
+      <p class="doc-p">中部按分组显示基础属性、器魂属性、洗炼属性。器魂和洗炼未拥有时不占位。</p>
+      <div class="doc-h3">3.4 底部操作区</div>
+      <p class="doc-p">若从英雄或仓库入口打开，底部保留「宝物强化」按钮，并在本独立演示中弹出提示；若从宝物获得界面打开，则不显示「宝物强化」按钮。若从英雄宝物入口打开，最下方增加横向宝物选择条，用于快速切换当前英雄穿戴的宝物。</p>
+
+      <a class="doc-anchor" id="doc-soul"></a>
+      <div class="doc-h2"><span>四、器魂详情弹窗</span><button class="doc-jump-btn" onclick="jumpToDemo('soul-detail')">↗ 查看</button></div>
+      <div class="doc-h3">4.1 触发来源</div>
+      <p class="doc-p">点击「器魂仓库」中的器魂，或点击「物品获得入口」中的器魂，均打开器魂详情弹窗。</p>
+      <div class="doc-h3">4.2 归属展示</div>
+      <p class="doc-p">若器魂已经注入宝物，归属关系显示在弹窗基础信息区的右上角，形式为「＞＞ + 宝物图标」。宝物图标沿用宝物图标规则：底部显示宝物名、左上角显示穿戴英雄头像，从一个显示中即可看出器魂装在哪件宝物上、该宝物由谁穿戴。未注入器魂不显示归属信息。</p>
+      <div class="doc-h3">4.3 操作区</div>
+      <ul class="doc-ul">
+        <li>未注入：显示提示「器魂需要注入宝物才能生效」，按钮为「器魂注入」，点击提示“跳转到宝物列表第一个没注魂的器魂”。</li>
+        <li>已注入：按钮为「查看宝物」，点击提示“跳转到对应宝物”。</li>
+      </ul>
+
+      <a class="doc-anchor" id="doc-select"></a>
+      <div class="doc-h2"><span>五、宝物选择弹窗</span><button class="doc-jump-btn" onclick="jumpToDemo('select')">↗ 查看</button></div>
+      <p class="doc-p">点击详情弹窗内「更换」按钮后打开。上方显示当前穿戴宝物；若当前槽位为空，则显示空位。下方列表展示当前拥有的所有宝物，并按品质从高到低排序。</p>
+      <ul class="doc-ul">
+        <li>已被英雄穿戴的宝物显示英雄头像角标。</li>
+        <li>点击任意列表宝物进入替换确认弹窗。</li>
+        <li>选择列表采用 4 列网格，保留 KING SHOT 穿戴列表的大弹窗、浅色底板和图标网格风格。</li>
+      </ul>
+
+      <a class="doc-anchor" id="doc-confirm"></a>
+      <div class="doc-h2"><span>六、替换确认弹窗</span><button class="doc-jump-btn" onclick="jumpToDemo('confirm')">↗ 查看</button></div>
+      <p class="doc-p">确认弹窗上方显示 A 宝物 → B 宝物。若没有 A，则左侧显示为空位。下方变化内容分为三组：</p>
+      <table class="doc-table">
+        <tr><th>分组</th><th>展示规则</th></tr>
+        <tr><td>基础属性</td><td>对比 A 与 B 的基础属性数值，提升为绿色，降低为红色。</td></tr>
+        <tr><td>器魂属性</td><td>若一侧没有器魂，则显示从「无」到目标器魂属性，或从原器魂属性到「无」。</td></tr>
+        <tr><td>洗炼属性</td><td>对比洗炼词条变化；没有洗炼词条时显示为空。</td></tr>
+      </table>
+      <p class="doc-p">底部为「取消」和「确定」按钮。确认后更新英雄穿戴关系，并回到替换后的宝物详情弹窗。</p>
+      <div class="doc-note">本演示重点表达仓库分页、弹窗信息结构和跳转关系；具体数值、排序权重、筛选规则可在后续接入真实配置表时替换。</div>
+    </div>
+  </div>
+</div>
+
+<script>
+var QUALITY = {
+  1:{name:'白',border:'../res/border_write.png',color:'#b9b9b9'},
+  2:{name:'绿',border:'../res/border_green.png',color:'#56c271'},
+  3:{name:'蓝',border:'../res/border_blue.png',color:'#4aa8ff'},
+  4:{name:'紫',border:'../res/border_purple.png',color:'#a769ff'},
+  5:{name:'金',border:'../res/border_golden.png',color:'#ffb72e'}
+};
+var TYPE_INFO = {
+  qibing:{name:'奇兵',icon:'⚔️'},zuoqi:{name:'坐骑',icon:'🐎'},baodian:{name:'宝典',icon:'📘'},qizhen:{name:'奇珍',icon:'💎'},lingfu:{name:'令符',icon:'🔰'}
+};
+var HERO = {name:'赵云',avatar:'../res/hero_10024201_0.png',equipped:{qibing:'t1',zuoqi:'t2',baodian:'t3',qizhen:'t4',lingfu:null}};
+var TREASURES = [
+  {id:'t1',name:'真龙·玲珑塔',baseName:'玲珑塔',type:'qibing',quality:5,icon:'../res/50100010.png',equippedHero:'赵云',baseAttrs:[a('攻击',1280),a('防御',520),a('兵力',10200),a('武力',42)],soul:{name:'真龙·锋芒',quality:4,attrs:[a('骑兵攻击',8.5,'%'),a('全军增伤',3.2,'%'),a('武力',18)]},washAttrs:[a('暴击伤害',6.8,'%'),a('攻击',260),a('技能伤害',4.6,'%')]},
+  {id:'t2',name:'赤焰追风',baseName:'赤焰追风',type:'zuoqi',quality:4,icon:'../res/50200010.png',equippedHero:'赵云',baseAttrs:[a('攻击',820),a('防御',360),a('兵力',7600),a('统率',26)],soul:null,washAttrs:[a('行军速度',4.5,'%'),a('骑兵生命',5.2,'%')]},
+  {id:'t3',name:'太公兵法',baseName:'太公兵法',type:'baodian',quality:3,icon:'../res/50101010.png',equippedHero:'赵云',baseAttrs:[a('攻击',560),a('防御',270),a('兵力',5200),a('智力',18)],soul:null,washAttrs:[]},
+  {id:'t4',name:'镇妖·山河印',baseName:'山河印',type:'qizhen',quality:4,icon:'../res/50101300.png',equippedHero:'赵云',baseAttrs:[a('攻击',900),a('防御',410),a('兵力',8300),a('魅力',31)],soul:{name:'镇妖·固守',quality:3,attrs:[a('步兵防御',7.2,'%'),a('全军减伤',2.4,'%')]},washAttrs:[a('兵力',680),a('防御',120)]},
+  {id:'t5',name:'乾坤·伏羲琴',baseName:'伏羲琴',type:'qizhen',quality:5,icon:'../res/50101320.png',equippedHero:null,baseAttrs:[a('攻击',1480),a('防御',610),a('兵力',11800),a('魅力',48)],soul:{name:'乾坤·破阵',quality:5,attrs:[a('全军攻击',9.6,'%'),a('技能伤害',5.8,'%'),a('魅力',22)]},washAttrs:[a('攻击',320),a('全军增伤',4.4,'%'),a('兵力',820)]},
+  {id:'t6',name:'玄武令',baseName:'玄武令',type:'lingfu',quality:5,icon:'../res/50101200.png',equippedHero:null,baseAttrs:[a('攻击',1320),a('防御',740),a('兵力',11000),a('统率',45)],soul:{name:'玄武·守御',quality:4,attrs:[a('步兵生命',8.8,'%'),a('全军减伤',3.8,'%')]},washAttrs:[a('防御',300),a('步兵生命',6.2,'%')]},
+  {id:'t7',name:'青龙偃月',baseName:'青龙偃月',type:'qibing',quality:4,icon:'../res/50100020.png',equippedHero:null,baseAttrs:[a('攻击',960),a('防御',390),a('兵力',7800),a('武力',33)],soul:null,washAttrs:[a('攻击',180)]},
+  {id:'t8',name:'洛神书卷',baseName:'洛神书卷',type:'baodian',quality:4,icon:'../res/50101020.png',equippedHero:null,baseAttrs:[a('攻击',880),a('防御',430),a('兵力',7200),a('智力',34)],soul:{name:'洛神·清心',quality:2,attrs:[a('弓兵生命',4.5,'%')]},washAttrs:[]},
+  {id:'t9',name:'白玉佩',baseName:'白玉佩',type:'qizhen',quality:2,icon:'../res/50101310.png',equippedHero:null,baseAttrs:[a('攻击',280),a('防御',120),a('兵力',2200)],soul:null,washAttrs:[]},
+  {id:'t10',name:'虎符',baseName:'虎符',type:'lingfu',quality:3,icon:'../res/50101120.png',equippedHero:null,baseAttrs:[a('攻击',520),a('防御',260),a('兵力',5000),a('统率',16)],soul:null,washAttrs:[a('步兵攻击',3.2,'%')]}
+];
+var SOULS = [
+  {id:'s1',name:'真龙·锋芒',type:'qibing',quality:4,ownerTreasureId:'t1',attrs:[a('骑兵攻击',8.5,'%'),a('全军增伤',3.2,'%'),a('武力',18)],source:'真龙试炼掉落'},
+  {id:'s2',name:'镇妖·固守',type:'qizhen',quality:3,ownerTreasureId:'t4',attrs:[a('步兵防御',7.2,'%'),a('全军减伤',2.4,'%')],source:'镇妖塔掉落'},
+  {id:'s3',name:'乾坤·破阵',type:'qizhen',quality:5,ownerTreasureId:'t5',attrs:[a('全军攻击',9.6,'%'),a('技能伤害',5.8,'%'),a('魅力',22)],source:'乾坤秘境掉落'},
+  {id:'s4',name:'仙隐·凝神',type:'baodian',quality:4,ownerTreasureId:null,attrs:[a('弓兵攻击',7.8,'%'),a('全军生命',2.8,'%'),a('智力',16)],source:'物品获得演示'},
+  {id:'s5',name:'玄武·守御',type:'lingfu',quality:4,ownerTreasureId:'t6',attrs:[a('步兵生命',8.8,'%'),a('全军减伤',3.8,'%')],source:'玄武幻境掉落'},
+  {id:'s6',name:'洛神·清心',type:'baodian',quality:2,ownerTreasureId:'t8',attrs:[a('弓兵生命',4.5,'%')],source:'洛水宝匣掉落'},
+  {id:'s7',name:'青龙·锐意',type:'qibing',quality:3,ownerTreasureId:null,attrs:[a('骑兵生命',5.6,'%'),a('攻击',120)],source:'青龙令兑换'}
+];
+var currentScene='hero',currentOrigin='hero',currentTreasureId='t1',currentSoulId='s1',currentSlotType='qibing',currentWarehouseTab='treasure',pendingReplace=null,toastTimer=null;
+function a(name,value,suffix){return {name:name,value:value,suffix:suffix||''};}
+function getTreasure(id){return TREASURES.find(function(t){return t.id===id;})||null;}
+function getSoul(id){return SOULS.find(function(s){return s.id===id;})||null;}
+function getSoulOwner(soul){return soul&&soul.ownerTreasureId?getTreasure(soul.ownerTreasureId):null;}
+function getEquippedSlot(id){for(var k in HERO.equipped){if(HERO.equipped[k]===id)return k;}return null;}
+function sortedTreasures(){return TREASURES.slice().sort(function(x,y){return y.quality-x.quality || x.name.localeCompare(y.name,'zh-CN');});}
+function sortedSouls(){return SOULS.slice().sort(function(x,y){return y.quality-x.quality || x.name.localeCompare(y.name,'zh-CN');});}
+function iconHTML(t,size,showHero){
+  if(!t)return '<div class="empty-big">空</div>';
+  var q=QUALITY[t.quality]||QUALITY[1];
+  var glow=t.quality>=5?' item-glow-q5':(t.quality===4?' item-glow-q4':'');
+  var html='<div class="treasure-icon'+glow+'" style="width:'+size+'px;height:'+size+'px">';
+  html+='<img class="item-bg" src="'+q.border+'"><img class="item-frame" src="../res/itemframe.png"><img class="item-content" src="'+t.icon+'">';
+  html+='<span class="icon-name-label" style="font-size:'+(size<55?7:9)+'px">'+t.name+'</span>';
+  if(showHero&&t.equippedHero)html+='<img class="icon-hero-badge" src="'+HERO.avatar+'">';
+  html+='</div>';return html;
+}
+function attrRows(attrs){return attrs.map(function(x){return '<div class="attr-row"><span class="attr-ico">'+ico(x.name)+'</span><span class="attr-name">'+x.name+'</span><span class="attr-value">'+fmt(x)+'</span></div>';}).join('');}
+function soulIconHTML(soul,size,showOwner){
+  var q=QUALITY[soul.quality]||QUALITY[1],owner=getSoulOwner(soul);
+  var html='<div class="soul-icon" style="width:'+size+'px;height:'+size+'px">';
+  html+='<img class="item-bg" src="'+q.border+'"><img class="item-frame" src="../res/itemframe.png"><span class="soul-star" style="font-size:'+Math.max(18,Math.floor(size*.46))+'px">✦</span>';
+  html+='<span class="icon-name-label" style="font-size:'+(size<55?7:9)+'px">'+soul.name+'</span>';
+  if(showOwner&&owner)html+='<span class="soul-owner-badge"><img src="'+owner.icon+'"></span>';
+  html+='</div>';return html;
+}
+function soulHTML(soul){
+  var q=QUALITY[soul.quality]||QUALITY[1];
+  return '<div class="soul-card"><div class="soul-icon"><img class="item-bg" src="'+q.border+'"><img class="item-frame" src="../res/itemframe.png"><span class="soul-star">✦</span></div><div class="soul-info"><div class="soul-head"><span class="soul-name">'+soul.name+'</span><span class="soul-state">已注入</span></div>'+attrRows(soul.attrs)+'</div></div>';
+}
+function ico(name){if(name.indexOf('攻击')>=0)return '⚔';if(name.indexOf('防御')>=0||name.indexOf('减伤')>=0)return '🛡';if(name.indexOf('兵力')>=0||name.indexOf('生命')>=0)return '♥';if(name.indexOf('速度')>=0)return '➤';return '✦';}
+function fmt(a){if(!a)return '-';return (a.suffix==='%'?('+'+num(a.value)+a.suffix):num(a.value));}
+function num(v){return String(v).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
+function switchScene(scene){currentScene=scene;document.querySelectorAll('.context-tab').forEach(function(b){b.classList.toggle('active',b.dataset.scene===scene);});document.querySelectorAll('.demo-scene').forEach(function(s){s.classList.remove('active');});document.getElementById('scene-'+scene).classList.add('active');closePopups();}
+function switchWarehouseTab(tab){currentWarehouseTab=tab;document.querySelectorAll('.warehouse-tab').forEach(function(b){b.classList.toggle('active',b.dataset.warehouse===tab);});document.querySelectorAll('.warehouse-page').forEach(function(p){p.classList.remove('active');});document.getElementById('warehouse-page-'+tab).classList.add('active');highlightNav(tab==='soul'?'warehouse-soul':'warehouse-treasure');}
+function renderHeroSlots(){
+  var el=document.getElementById('hero-slots'),html='';
+  Object.keys(TYPE_INFO).forEach(function(type){var tid=HERO.equipped[type],t=getTreasure(tid);html+='<div class="slot-card" onclick="'+(t?"openDetail('"+t.id+"','hero','"+type+"')":"openSelectPopup('"+type+"')")+'">';
+    html+=(t?iconHTML(t,46,true):'<div class="empty-plus">＋</div>')+'<div class="slot-label">'+TYPE_INFO[type].name+'</div></div>';});
+  el.innerHTML=html;
+}
+function renderWarehouse(){
+  var el=document.getElementById('warehouse-list'),html='';
+  sortedTreasures().forEach(function(t){html+='<div class="inventory-cell" onclick="openDetail(\''+t.id+'\',\'bag\',\''+t.type+'\')">'+iconHTML(t,60,true)+'<div class="inventory-name">'+t.name+'</div></div>';});
+  el.innerHTML=html;
+}
+function renderSoulWarehouse(){
+  var el=document.getElementById('soul-warehouse-list'),html='';
+  sortedSouls().forEach(function(s){html+='<div class="inventory-cell" onclick="openSoulDetail(\''+s.id+'\',\'bag\')">'+soulIconHTML(s,60,true)+'<div class="inventory-name">'+s.name+'</div></div>';});
+  el.innerHTML=html;
+}
+function renderGainRewards(){
+  var el=document.getElementById('gain-rewards'),s=getSoul('s4'),t=getTreasure('t9');
+  el.innerHTML='<div class="gain-reward" onclick="openSoulDetail(\'s4\',\'gain\')">'+soulIconHTML(s,72,false)+'<span>'+s.name+'</span></div><div class="gain-reward" onclick="openDetail(\'t9\',\'gain\',\'qizhen\')">'+iconHTML(t,72,false)+'<span>'+t.name+'</span></div>';
+}
+function showLayer(id){document.getElementById(id).classList.add('show');}
+function hideLayer(id){document.getElementById(id).classList.remove('show');}
+function closePopups(){['detail-layer','select-layer','confirm-layer'].forEach(hideLayer);}
+function openDetail(id,origin,slotType){
+  var t=getTreasure(id);if(!t)return;currentTreasureId=id;currentOrigin=origin;currentSlotType=slotType||getEquippedSlot(id)||t.type;highlightNav('detail-hero');
+  var equipped=!!t.equippedHero,ops='';
+  if(equipped)ops+='<button class="ks-btn orange" onclick="unloadTreasure(\''+t.id+'\')">卸下</button>';
+  if(origin==='hero')ops+='<button class="ks-btn cyan" onclick="openSelectPopup(\''+currentSlotType+'\')">更换</button>';
+  if(!ops)ops='<button class="ks-btn gray" onclick="showToast(\'未穿戴宝物暂无快捷操作\')">未穿戴</button>';
+  var panel=document.getElementById('detail-panel');
+  panel.classList.toggle('has-strip',origin==='hero');
+  var sectionCount=1+(t.soul?1:0)+((t.washAttrs&&t.washAttrs.length)?1:0);
+  var adaptiveClass=(origin==='hero'&&sectionCount>1)?'':' adaptive-card';
+  if(sectionCount===1)adaptiveClass+=' compact-card';
+  var body='<div class="detail-card treasure-detail-card'+adaptiveClass+'"><div class="popup-title">宝物详情<button class="popup-close" onclick="closePopups()">×</button></div><div class="detail-content">';
+  body+='<div class="detail-top">'+iconHTML(t,72,true)+'<div class="detail-info"><div class="detail-name">'+t.name+'</div><div class="detail-meta"><span class="quality-pill" style="color:'+QUALITY[t.quality].color+'">'+QUALITY[t.quality].name+'色品质</span><span class="type-pill">'+TYPE_INFO[t.type].icon+' '+TYPE_INFO[t.type].name+'</span></div><div class="detail-meta">'+(t.equippedHero?'穿戴英雄：'+t.equippedHero:'当前未穿戴')+'</div></div><div class="detail-ops">'+ops+'</div></div>';
+  body+='<div class="detail-scroll drag-scroll">';
+  body+='<div class="info-section"><div class="section-title">基础属性</div><div class="attr-box">'+attrRows(t.baseAttrs)+'</div></div>';
+  if(t.soul){body+='<div class="info-section"><div class="section-title">器魂与器魂属性</div><div class="attr-box soul-box">'+soulHTML(t.soul)+'</div></div>';}
+  if(t.washAttrs&&t.washAttrs.length){body+='<div class="info-section"><div class="section-title">洗炼属性</div><div class="attr-box">'+attrRows(t.washAttrs)+'</div></div>';}
+  body+='</div>'+(origin==='gain'?'':'<div class="bottom-action"><button class="ks-btn cyan" onclick="openEnhanceDoc()">宝物强化</button></div>')+'</div></div>';
+  if(origin==='hero')body+=heroStrip(id);
+  panel.innerHTML=body;closePopups();showLayer('detail-layer');
+}
+function openSoulDetail(id,origin){
+  var soul=getSoul(id);if(!soul)return;currentSoulId=id;highlightNav(origin==='gain'?'gain-soul':'soul-detail');
+  var owner=getSoulOwner(soul),panel=document.getElementById('detail-panel');
+  panel.classList.remove('has-strip');
+  var body='<div class="detail-card soul-detail-card"><div class="popup-title">器魂详情<button class="popup-close" onclick="closePopups()">×</button></div><div class="detail-content">';
+  body+='<div class="detail-top">'+soulIconHTML(soul,72,false)+'<div class="detail-info"><div class="detail-name">'+soul.name+'</div><div class="detail-meta"><span class="quality-pill" style="color:'+QUALITY[soul.quality].color+'">'+QUALITY[soul.quality].name+'色器魂</span><span class="type-pill">'+TYPE_INFO[soul.type].icon+' '+TYPE_INFO[soul.type].name+'</span></div><div class="detail-meta">来源：'+soul.source+'</div></div>'+(owner?'<div class="soul-owner-compact"><span class="soul-link-arrow">＞＞</span>'+iconHTML(owner,54,true)+'</div>':'')+'</div>';
+  body+='<div class="detail-scroll drag-scroll"><div class="info-section"><div class="section-title">器魂属性</div><div class="attr-box">'+attrRows(soul.attrs)+'</div></div>';
+  body+='</div>';
+  if(owner){
+    body+='<div class="bottom-action"><button class="ks-btn cyan" onclick="showToast(\'跳转到对应宝物\')">查看宝物</button></div>';
+  }else{
+    body+='<div class="action-tip">器魂需要注入宝物才能生效</div><div class="bottom-action"><button class="ks-btn cyan" onclick="showToast(\'跳转到宝物列表第一个没注魂的器魂\')">器魂注入</button></div>';
+  }
+  body+='</div></div>';
+  panel.innerHTML=body;closePopups();showLayer('detail-layer');
+}
+function heroStrip(activeId){var html='<div class="hero-strip"><div class="hero-strip-list drag-scroll">';Object.keys(TYPE_INFO).forEach(function(type){var t=getTreasure(HERO.equipped[type]);if(t){html+='<div class="strip-item '+(t.id===activeId?'active':'')+'" onclick="openDetail(\''+t.id+'\',\'hero\',\''+type+'\')">'+iconHTML(t,54,true)+'</div>';}else{html+='<div class="strip-empty" onclick="openSelectPopup(\''+type+'\')">＋</div>';}});return html+'</div></div>';}
+function openSelectPopup(slotType){
+  currentSlotType=slotType||currentSlotType||'qibing';highlightNav('select');var current=getTreasure(HERO.equipped[currentSlotType]);
+  var body='<div class="popup-title">宝物选择<button class="popup-close" onclick="closePopups()">×</button></div><div class="popup-body">';
+  body+='<div class="current-wear">'+(current?iconHTML(current,76,true):'<div class="empty-big">空位</div>')+'<div class="current-wear-label">当前穿戴'+(current?'':'：空')+'</div></div>';
+  body+='<div class="select-grid-wrap drag-scroll"><div class="select-grid">';
+  sortedTreasures().forEach(function(t){var isCur=current&&current.id===t.id;body+='<div class="select-item '+(isCur?'disabled':'')+'" onclick="'+(isCur?'showToast(\'当前已穿戴该宝物\')':'openReplaceConfirm(\''+t.id+'\')')+'">'+iconHTML(t,64,false)+(t.equippedHero?'<img class="select-hero-badge" src="'+HERO.avatar+'">':'')+'</div>';});
+  body+='</div></div></div>';document.getElementById('select-panel').innerHTML=body;closePopups();showLayer('select-layer');
+}
+function openReplaceConfirm(targetId,forceEmpty){
+  var fromId=forceEmpty?null:HERO.equipped[currentSlotType];pendingReplace={slot:currentSlotType,from:fromId,to:targetId};highlightNav('confirm');
+  var from=getTreasure(fromId),to=getTreasure(targetId);var body='<div class="popup-title">替换确认<button class="popup-close" onclick="closePopups()">×</button></div><div class="popup-body confirm-body">';
+  body+='<div class="compare-head"><div class="compare-side">'+(from?iconHTML(from,74,true):'<div class="empty-big">空</div>')+'<div class="compare-name">'+(from?from.name:'未穿戴')+'</div></div><div class="compare-arrow">➜</div><div class="compare-side">'+iconHTML(to,74,true)+'<div class="compare-name">'+to.name+'</div></div></div>';
+  body+='<div class="change-box drag-scroll">'+changeSections(from,to)+'</div><div class="confirm-actions"><button class="ks-btn orange" onclick="backToSelect()">取消</button><button class="ks-btn cyan" onclick="confirmReplace()">确定</button></div></div>';
+  document.getElementById('confirm-panel').innerHTML=body;closePopups();showLayer('confirm-layer');
+}
+function changeSections(from,to){
+  return oneChangeSection('基础属性',from?from.baseAttrs:[],to.baseAttrs)+oneSoulChangeSection(from,to)+oneChangeSection('洗炼属性',from?from.washAttrs:[],to.washAttrs||[]);
+}
+function oneSoulChangeSection(from,to){
+  var oldSoul=from&&from.soul?from.soul:null,newSoul=to&&to.soul?to.soul:null;
+  var html='<div class="change-section-title">器魂属性</div><div class="soul-change-line">'+(oldSoul?soulIconHTML(oldSoul,46,false):'<div class="soul-mini-empty">无</div>')+'<span class="soul-change-arrow">➜</span>'+(newSoul?soulIconHTML(newSoul,46,false):'<div class="soul-mini-empty">无</div>')+'</div>';
+  return html+oneChangeRows(oldSoul?oldSoul.attrs:[],newSoul?newSoul.attrs:[]);
+}
+function oneChangeSection(title,oldAttrs,newAttrs){
+  return '<div class="change-section-title">'+title+'</div>'+oneChangeRows(oldAttrs,newAttrs);
+}
+function oneChangeRows(oldAttrs,newAttrs){
+  var keys=[],mapOld={},mapNew={};oldAttrs.forEach(function(x){mapOld[x.name]=x;if(keys.indexOf(x.name)<0)keys.push(x.name);});newAttrs.forEach(function(x){mapNew[x.name]=x;if(keys.indexOf(x.name)<0)keys.push(x.name);});
+  var html='';if(!keys.length)return '<div class="empty-change">无属性变化</div>';
+  keys.forEach(function(k){var o=mapOld[k],n=mapNew[k],ov=o?o.value:0,nv=n?n.value:0,suf=(n&&n.suffix)||(o&&o.suffix)||'',cls=nv>ov?'up':(nv<ov?'down':'same');html+='<div class="change-row"><div class="change-name">'+ico(k)+' '+k+'</div><div class="old-val">'+(o?fmt(o):'无')+'</div><div class="arrow-mini">➜</div><div class="new-val '+cls+'">'+(n?(suf==='%'?'+'+num(n.value)+suf:num(n.value)):'无')+'</div></div>';});return html;
+}
+function unloadTreasure(id){var slot=getEquippedSlot(id),t=getTreasure(id);if(slot)HERO.equipped[slot]=null;if(t)t.equippedHero=null;renderHeroSlots();renderWarehouse();renderSoulWarehouse();closePopups();showToast('已卸下宝物');}
+function backToSelect(){openSelectPopup(currentSlotType);}
+function confirmReplace(){if(!pendingReplace)return;var from=getTreasure(pendingReplace.from),to=getTreasure(pendingReplace.to);if(!to)return;var oldSlot=getEquippedSlot(to.id);if(oldSlot)HERO.equipped[oldSlot]=null;if(from)from.equippedHero=null;to.equippedHero=HERO.name;HERO.equipped[pendingReplace.slot]=to.id;renderHeroSlots();renderWarehouse();renderSoulWarehouse();closePopups();showToast('已更换宝物');openDetail(to.id,'hero',pendingReplace.slot);}
+function openEnhanceDoc(){showToast('打开宝物详情界面');}
+function jumpToDemo(target){highlightNav(target);if(target==='overview'){switchScene('hero');closePopups();scrollDocTo('doc-overview');}else if(target==='warehouse-treasure'){switchScene('bag');switchWarehouseTab('treasure');closePopups();scrollDocTo('doc-warehouse');}else if(target==='warehouse-soul'){switchScene('bag');switchWarehouseTab('soul');closePopups();scrollDocTo('doc-warehouse');}else if(target==='detail-hero'){switchScene('hero');openDetail(HERO.equipped.qibing,'hero','qibing');scrollDocTo('doc-detail');}else if(target==='detail-bag'){switchScene('bag');switchWarehouseTab('treasure');openDetail('t5','bag','qizhen');scrollDocTo('doc-detail');}else if(target==='soul-detail'){switchScene('bag');switchWarehouseTab('soul');openSoulDetail('s1','bag');scrollDocTo('doc-soul');}else if(target==='gain-soul'){switchScene('gain');openSoulDetail('s4','gain');scrollDocTo('doc-soul');}else if(target==='select'){switchScene('hero');openSelectPopup('qibing');scrollDocTo('doc-select');}else if(target==='confirm'){switchScene('hero');currentSlotType='qibing';openReplaceConfirm('t7');scrollDocTo('doc-confirm');}else if(target==='empty-confirm'){switchScene('hero');currentSlotType='lingfu';openReplaceConfirm('t6',true);scrollDocTo('doc-confirm');}}
+function highlightNav(target){document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.toggle('active',b.dataset.target===target);});}
+function scrollDocTo(id){var body=document.getElementById('doc-body'),el=document.getElementById(id);if(!body||!el)return;var top=el.getBoundingClientRect().top-body.getBoundingClientRect().top+body.scrollTop;body.scrollTop=Math.max(0,top-8);}
+function showToast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove('show');},1600);}
+['detail-layer','select-layer','confirm-layer'].forEach(function(id){document.getElementById(id).addEventListener('click',function(e){if(e.target===this)closePopups();});});
+var dragState=null,blockClick=false;
+document.addEventListener('mousedown',function(e){
+  if(e.button!==0)return;
+  var el=e.target.closest('.drag-scroll');
+  if(!el||e.target.closest('button'))return;
+  dragState={el:el,x:e.clientX,y:e.clientY,left:el.scrollLeft,top:el.scrollTop,moved:false};
+  el.classList.add('dragging');
+});
+document.addEventListener('mousemove',function(e){
+  if(!dragState)return;
+  var dx=e.clientX-dragState.x,dy=e.clientY-dragState.y;
+  if(Math.abs(dx)>3||Math.abs(dy)>3)dragState.moved=true;
+  dragState.el.scrollLeft=dragState.left-dx;
+  dragState.el.scrollTop=dragState.top-dy;
+  if(dragState.moved)e.preventDefault();
+});
+document.addEventListener('mouseup',function(){
+  if(!dragState)return;
+  dragState.el.classList.remove('dragging');
+  if(dragState.moved){blockClick=true;setTimeout(function(){blockClick=false;},0);}
+  dragState=null;
+});
+document.addEventListener('click',function(e){
+  if(!blockClick)return;
+  e.preventDefault();e.stopPropagation();blockClick=false;
+},true);
+renderHeroSlots();renderWarehouse();renderSoulWarehouse();renderGainRewards();
+</script>
+</body>
+</html>
