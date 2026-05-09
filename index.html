@@ -234,7 +234,7 @@ ks-btn,.ks-btn{}
         <div class="help-box">点击英雄身上的任意宝物打开「宝物详情」。从英雄入口打开时，详情弹窗底部会出现英雄已穿戴宝物横向选择，并显示「更换」按钮。</div>
         <div class="hero-card">
           <div class="hero-head">
-            <img class="hero-avatar" src="../res/hero_10024201_0.png" alt="hero">
+            <img class="hero-avatar" src="res/hero_10024201_0.png" alt="hero">
             <div><div class="hero-name">赵云</div><div class="hero-sub">当前穿戴 4 / 5 件宝物；令符槽为空，可演示 A 为空的替换确认。</div></div>
           </div>
           <div class="treasure-slots" id="hero-slots"></div>
@@ -387,27 +387,27 @@ ks-btn,.ks-btn{}
 
 <script>
 var QUALITY = {
-  1:{name:'白',border:'../res/border_write.png',color:'#b9b9b9'},
-  2:{name:'绿',border:'../res/border_green.png',color:'#56c271'},
-  3:{name:'蓝',border:'../res/border_blue.png',color:'#4aa8ff'},
-  4:{name:'紫',border:'../res/border_purple.png',color:'#a769ff'},
-  5:{name:'金',border:'../res/border_golden.png',color:'#ffb72e'}
+  1:{name:'白',border:'res/border_write.png',color:'#b9b9b9'},
+  2:{name:'绿',border:'res/border_green.png',color:'#56c271'},
+  3:{name:'蓝',border:'res/border_blue.png',color:'#4aa8ff'},
+  4:{name:'紫',border:'res/border_purple.png',color:'#a769ff'},
+  5:{name:'金',border:'res/border_golden.png',color:'#ffb72e'}
 };
 var TYPE_INFO = {
   qibing:{name:'奇兵',icon:'⚔️'},zuoqi:{name:'坐骑',icon:'🐎'},baodian:{name:'宝典',icon:'📘'},qizhen:{name:'奇珍',icon:'💎'},lingfu:{name:'令符',icon:'🔰'}
 };
-var HERO = {name:'赵云',avatar:'../res/hero_10024201_0.png',equipped:{qibing:'t1',zuoqi:'t2',baodian:'t3',qizhen:'t4',lingfu:null}};
+var HERO = {name:'赵云',avatar:'res/hero_10024201_0.png',equipped:{qibing:'t1',zuoqi:'t2',baodian:'t3',qizhen:'t4',lingfu:null}};
 var TREASURES = [
-  {id:'t1',name:'真龙·玲珑塔',baseName:'玲珑塔',type:'qibing',quality:5,icon:'../res/50100010.png',equippedHero:'赵云',baseAttrs:[a('攻击',1280),a('防御',520),a('兵力',10200),a('武力',42)],soul:{name:'真龙·锋芒',quality:4,attrs:[a('骑兵攻击',8.5,'%'),a('全军增伤',3.2,'%'),a('武力',18)]},washAttrs:[a('暴击伤害',6.8,'%'),a('攻击',260),a('技能伤害',4.6,'%')]},
-  {id:'t2',name:'赤焰追风',baseName:'赤焰追风',type:'zuoqi',quality:4,icon:'../res/50200010.png',equippedHero:'赵云',baseAttrs:[a('攻击',820),a('防御',360),a('兵力',7600),a('统率',26)],soul:null,washAttrs:[a('行军速度',4.5,'%'),a('骑兵生命',5.2,'%')]},
-  {id:'t3',name:'太公兵法',baseName:'太公兵法',type:'baodian',quality:3,icon:'../res/50101010.png',equippedHero:'赵云',baseAttrs:[a('攻击',560),a('防御',270),a('兵力',5200),a('智力',18)],soul:null,washAttrs:[]},
-  {id:'t4',name:'镇妖·山河印',baseName:'山河印',type:'qizhen',quality:4,icon:'../res/50101300.png',equippedHero:'赵云',baseAttrs:[a('攻击',900),a('防御',410),a('兵力',8300),a('魅力',31)],soul:{name:'镇妖·固守',quality:3,attrs:[a('步兵防御',7.2,'%'),a('全军减伤',2.4,'%')]},washAttrs:[a('兵力',680),a('防御',120)]},
-  {id:'t5',name:'乾坤·伏羲琴',baseName:'伏羲琴',type:'qizhen',quality:5,icon:'../res/50101320.png',equippedHero:null,baseAttrs:[a('攻击',1480),a('防御',610),a('兵力',11800),a('魅力',48)],soul:{name:'乾坤·破阵',quality:5,attrs:[a('全军攻击',9.6,'%'),a('技能伤害',5.8,'%'),a('魅力',22)]},washAttrs:[a('攻击',320),a('全军增伤',4.4,'%'),a('兵力',820)]},
-  {id:'t6',name:'玄武令',baseName:'玄武令',type:'lingfu',quality:5,icon:'../res/50101200.png',equippedHero:null,baseAttrs:[a('攻击',1320),a('防御',740),a('兵力',11000),a('统率',45)],soul:{name:'玄武·守御',quality:4,attrs:[a('步兵生命',8.8,'%'),a('全军减伤',3.8,'%')]},washAttrs:[a('防御',300),a('步兵生命',6.2,'%')]},
-  {id:'t7',name:'青龙偃月',baseName:'青龙偃月',type:'qibing',quality:4,icon:'../res/50100020.png',equippedHero:null,baseAttrs:[a('攻击',960),a('防御',390),a('兵力',7800),a('武力',33)],soul:null,washAttrs:[a('攻击',180)]},
-  {id:'t8',name:'洛神书卷',baseName:'洛神书卷',type:'baodian',quality:4,icon:'../res/50101020.png',equippedHero:null,baseAttrs:[a('攻击',880),a('防御',430),a('兵力',7200),a('智力',34)],soul:{name:'洛神·清心',quality:2,attrs:[a('弓兵生命',4.5,'%')]},washAttrs:[]},
-  {id:'t9',name:'白玉佩',baseName:'白玉佩',type:'qizhen',quality:2,icon:'../res/50101310.png',equippedHero:null,baseAttrs:[a('攻击',280),a('防御',120),a('兵力',2200)],soul:null,washAttrs:[]},
-  {id:'t10',name:'虎符',baseName:'虎符',type:'lingfu',quality:3,icon:'../res/50101120.png',equippedHero:null,baseAttrs:[a('攻击',520),a('防御',260),a('兵力',5000),a('统率',16)],soul:null,washAttrs:[a('步兵攻击',3.2,'%')]}
+  {id:'t1',name:'真龙·玲珑塔',baseName:'玲珑塔',type:'qibing',quality:5,icon:'res/50100010.png',equippedHero:'赵云',baseAttrs:[a('攻击',1280),a('防御',520),a('兵力',10200),a('武力',42)],soul:{name:'真龙·锋芒',quality:4,attrs:[a('骑兵攻击',8.5,'%'),a('全军增伤',3.2,'%'),a('武力',18)]},washAttrs:[a('暴击伤害',6.8,'%'),a('攻击',260),a('技能伤害',4.6,'%')]},
+  {id:'t2',name:'赤焰追风',baseName:'赤焰追风',type:'zuoqi',quality:4,icon:'res/50200010.png',equippedHero:'赵云',baseAttrs:[a('攻击',820),a('防御',360),a('兵力',7600),a('统率',26)],soul:null,washAttrs:[a('行军速度',4.5,'%'),a('骑兵生命',5.2,'%')]},
+  {id:'t3',name:'太公兵法',baseName:'太公兵法',type:'baodian',quality:3,icon:'res/50101010.png',equippedHero:'赵云',baseAttrs:[a('攻击',560),a('防御',270),a('兵力',5200),a('智力',18)],soul:null,washAttrs:[]},
+  {id:'t4',name:'镇妖·山河印',baseName:'山河印',type:'qizhen',quality:4,icon:'res/50101300.png',equippedHero:'赵云',baseAttrs:[a('攻击',900),a('防御',410),a('兵力',8300),a('魅力',31)],soul:{name:'镇妖·固守',quality:3,attrs:[a('步兵防御',7.2,'%'),a('全军减伤',2.4,'%')]},washAttrs:[a('兵力',680),a('防御',120)]},
+  {id:'t5',name:'乾坤·伏羲琴',baseName:'伏羲琴',type:'qizhen',quality:5,icon:'res/50101320.png',equippedHero:null,baseAttrs:[a('攻击',1480),a('防御',610),a('兵力',11800),a('魅力',48)],soul:{name:'乾坤·破阵',quality:5,attrs:[a('全军攻击',9.6,'%'),a('技能伤害',5.8,'%'),a('魅力',22)]},washAttrs:[a('攻击',320),a('全军增伤',4.4,'%'),a('兵力',820)]},
+  {id:'t6',name:'玄武令',baseName:'玄武令',type:'lingfu',quality:5,icon:'res/50101200.png',equippedHero:null,baseAttrs:[a('攻击',1320),a('防御',740),a('兵力',11000),a('统率',45)],soul:{name:'玄武·守御',quality:4,attrs:[a('步兵生命',8.8,'%'),a('全军减伤',3.8,'%')]},washAttrs:[a('防御',300),a('步兵生命',6.2,'%')]},
+  {id:'t7',name:'青龙偃月',baseName:'青龙偃月',type:'qibing',quality:4,icon:'res/50100020.png',equippedHero:null,baseAttrs:[a('攻击',960),a('防御',390),a('兵力',7800),a('武力',33)],soul:null,washAttrs:[a('攻击',180)]},
+  {id:'t8',name:'洛神书卷',baseName:'洛神书卷',type:'baodian',quality:4,icon:'res/50101020.png',equippedHero:null,baseAttrs:[a('攻击',880),a('防御',430),a('兵力',7200),a('智力',34)],soul:{name:'洛神·清心',quality:2,attrs:[a('弓兵生命',4.5,'%')]},washAttrs:[]},
+  {id:'t9',name:'白玉佩',baseName:'白玉佩',type:'qizhen',quality:2,icon:'res/50101310.png',equippedHero:null,baseAttrs:[a('攻击',280),a('防御',120),a('兵力',2200)],soul:null,washAttrs:[]},
+  {id:'t10',name:'虎符',baseName:'虎符',type:'lingfu',quality:3,icon:'res/50101120.png',equippedHero:null,baseAttrs:[a('攻击',520),a('防御',260),a('兵力',5000),a('统率',16)],soul:null,washAttrs:[a('步兵攻击',3.2,'%')]}
 ];
 var SOULS = [
   {id:'s1',name:'真龙·锋芒',type:'qibing',quality:4,ownerTreasureId:'t1',attrs:[a('骑兵攻击',8.5,'%'),a('全军增伤',3.2,'%'),a('武力',18)],source:'真龙试炼掉落'},
@@ -431,7 +431,7 @@ function iconHTML(t,size,showHero){
   var q=QUALITY[t.quality]||QUALITY[1];
   var glow=t.quality>=5?' item-glow-q5':(t.quality===4?' item-glow-q4':'');
   var html='<div class="treasure-icon'+glow+'" style="width:'+size+'px;height:'+size+'px">';
-  html+='<img class="item-bg" src="'+q.border+'"><img class="item-frame" src="../res/itemframe.png"><img class="item-content" src="'+t.icon+'">';
+  html+='<img class="item-bg" src="'+q.border+'"><img class="item-frame" src="res/itemframe.png"><img class="item-content" src="'+t.icon+'">';
   html+='<span class="icon-name-label" style="font-size:'+(size<55?7:9)+'px">'+t.name+'</span>';
   if(showHero&&t.equippedHero)html+='<img class="icon-hero-badge" src="'+HERO.avatar+'">';
   html+='</div>';return html;
@@ -440,14 +440,14 @@ function attrRows(attrs){return attrs.map(function(x){return '<div class="attr-r
 function soulIconHTML(soul,size,showOwner){
   var q=QUALITY[soul.quality]||QUALITY[1],owner=getSoulOwner(soul);
   var html='<div class="soul-icon" style="width:'+size+'px;height:'+size+'px">';
-  html+='<img class="item-bg" src="'+q.border+'"><img class="item-frame" src="../res/itemframe.png"><span class="soul-star" style="font-size:'+Math.max(18,Math.floor(size*.46))+'px">✦</span>';
+  html+='<img class="item-bg" src="'+q.border+'"><img class="item-frame" src="res/itemframe.png"><span class="soul-star" style="font-size:'+Math.max(18,Math.floor(size*.46))+'px">✦</span>';
   html+='<span class="icon-name-label" style="font-size:'+(size<55?7:9)+'px">'+soul.name+'</span>';
   if(showOwner&&owner)html+='<span class="soul-owner-badge"><img src="'+owner.icon+'"></span>';
   html+='</div>';return html;
 }
 function soulHTML(soul){
   var q=QUALITY[soul.quality]||QUALITY[1];
-  return '<div class="soul-card"><div class="soul-icon"><img class="item-bg" src="'+q.border+'"><img class="item-frame" src="../res/itemframe.png"><span class="soul-star">✦</span></div><div class="soul-info"><div class="soul-head"><span class="soul-name">'+soul.name+'</span><span class="soul-state">已注入</span></div>'+attrRows(soul.attrs)+'</div></div>';
+  return '<div class="soul-card"><div class="soul-icon"><img class="item-bg" src="'+q.border+'"><img class="item-frame" src="res/itemframe.png"><span class="soul-star">✦</span></div><div class="soul-info"><div class="soul-head"><span class="soul-name">'+soul.name+'</span><span class="soul-state">已注入</span></div>'+attrRows(soul.attrs)+'</div></div>';
 }
 function ico(name){if(name.indexOf('攻击')>=0)return '⚔';if(name.indexOf('防御')>=0||name.indexOf('减伤')>=0)return '🛡';if(name.indexOf('兵力')>=0||name.indexOf('生命')>=0)return '♥';if(name.indexOf('速度')>=0)return '➤';return '✦';}
 function fmt(a){if(!a)return '-';return (a.suffix==='%'?('+'+num(a.value)+a.suffix):num(a.value));}
